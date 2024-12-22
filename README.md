@@ -1,11 +1,10 @@
 # MyAutomationTool
-Automating The Data Wrangling process
-Enhanced Data Analysis Toolkit in Python
+# Automating The Data Wrangling process
+# Enhanced Data Analysis Toolkit in Python
 This project provides a comprehensive Python toolkit for data analysis, focusing on preprocessing, outlier detection, visualization, and data cleaning. It combines advanced statistical methods, machine learning techniques, and insightful visualizations to streamline and enhance the data analysis workflow.
 
 Features
 Outlier Detection:
-
 IQR Method: Detects outliers based on the Interquartile Range (IQR).
 Z-Score Method: Identifies outliers using the Z-score threshold.
 Isolation Forest: A machine learning approach for detecting anomalies.
