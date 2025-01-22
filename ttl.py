@@ -16,8 +16,12 @@ from wordcloud import WordCloud
 from IPython.display import Markdown, display
 import missingno as msno
 import plotly.express as px
+from mpl_toolkits.mplot3d import Axes3D
+import networkx as nx
 
 class analyisisToolkit:
+    # Create an instance of the analyisisToolkit class
+    
     
     # Dummy function for correcting data types, replace with actual implementation
     def generate_business_report(df, report_filename="business_data_report.pdf"):
@@ -577,6 +581,123 @@ class analyisisToolkit:
         plt.xlabel("Data Points")
         plt.ylabel("Distance")
         plt.show()
+    # Visualization 37: Contour Plot
+    def plot_contour(self, df, x_col, y_col, title):
+        """
+        Plots a contour plot.
+        """
+        plt.figure(figsize=(8, 6))
+        plt.tricontourf(df[x_col], df[y_col], df[x_col], cmap='viridis')
+        plt.colorbar(label='Intensity')
+        plt.xlabel(x_col)
+        plt.ylabel(y_col)
+        plt.title(title)
+        plt.show()
+
+    # Visualization 38: Surface Plot
+    def plot_surface(self, df, x_col, y_col, z_col, title):
+        """
+        Plots a 3D surface plot.
+        """
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_trisurf(df[x_col], df[y_col], df[z_col], cmap='viridis')
+        ax.set_xlabel(x_col)
+        ax.set_ylabel(y_col)
+        ax.set_zlabel(z_col)
+        ax.set_title(title)
+        plt.show()
+
+    # Visualization 39: Streamgraph
+    def plot_streamgraph(self, df, column, title):
+        """
+        Plots a streamgraph.
+        """
+        df.set_index(column).T.plot(kind='area', stacked=True, colormap='viridis', figsize=(10, 6))
+        plt.title(title)
+        plt.xlabel('X-axis')
+        plt.ylabel('Y-axis')
+        plt.show()
+
+    # Visualization 40: Network Graph
+    def plot_network_graph(self, df, source_col, target_col, title):
+        """
+        Plots a network graph.
+        """
+        G = nx.from_pandas_edgelist(df, source=source_col, target=target_col)
+        plt.figure(figsize=(10, 8))
+        nx.draw(G, with_labels=True, node_color='skyblue', edge_color='gray', node_size=2000, font_size=10)
+        plt.title(title)
+        plt.show()
+
+    # Visualization 41: 3D Surface Plot
+    def plot_3d_surface(self, df, x_col, y_col, z_col, title):
+        """
+        Plots a 3D surface plot.
+        """
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_trisurf(df[x_col], df[y_col], df[z_col], cmap='viridis')
+        ax.set_xlabel(x_col)
+        ax.set_ylabel(y_col)
+        ax.set_zlabel(z_col)
+        ax.set_title(title)
+        plt.show()
+
+    # Visualization 42: 3D Bar Plot
+    def plot_3d_bar(self, df, x_col, y_col, z_col, title):
+        """
+        Plots a 3D bar plot.
+        """
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.bar3d(df[x_col], df[y_col], df[z_col], dx=0.5, dy=0.5, dz=0.5)
+        ax.set_xlabel(x_col)
+        ax.set_ylabel(y_col)
+        ax.set_zlabel(z_col)
+        ax.set_title(title)
+        plt.show()
+
+    # Visualization 43: 3D Line Plot
+    def plot_3d_line(self, df, x_col, y_col, z_col, title):
+        """
+        Plots a 3D line plot.
+        """
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot(df[x_col], df[y_col], df[z_col])
+        ax.set_xlabel(x_col)
+        ax.set_ylabel(y_col)
+        ax.set_zlabel(z_col)
+        ax.set_title(title)
+        plt.show()
+
+    # Visualization 44: Interactive Scatter Plot (Plotly)
+    def plot_interactive_scatter(self, df, x_col, y_col, title):
+        """
+        Plots an interactive scatter plot using Plotly.
+        """
+        fig = px.scatter(df, x=x_col, y=y_col, title=title)
+        fig.show()
+
+    # Visualization 45: Interactive Heatmap (Plotly)
+    def plot_interactive_heatmap(self, df, title):
+        """
+        Plots an interactive heatmap using Plotly.
+        """
+        # Filter numeric columns
+        numeric_df = df.select_dtypes(include=['number'])
+        # Plot the heatmap
+        fig = px.imshow(numeric_df.corr(), title=title)
+        fig.show()
+    # Visualization 46: Interactive Line Plot (Plotly)
+    def plot_interactive_line(self, df, x_col, y_col, title):
+        """
+        Plots an interactive line plot using Plotly.
+        """
+        fig = px.line(df, x=x_col, y=y_col, title=title)
+        fig.show()
+
     
     
     # Imputation
@@ -705,6 +826,7 @@ class analyisisToolkit:
         Returns the modified DataFrame at the end.
         """
         # --- Outlier Handling Functions ---
+        Toolkit = analyisisToolkit()
         def bold_and_large(text):
             display(Markdown(f"# *{text}*"))
 
@@ -1018,29 +1140,33 @@ class analyisisToolkit:
             print(f"{len(df.columns) + 2}. Exit")
     
         def get_column_choice(df):
+            """
+            Prompts the user to select one or more columns from the DataFrame.
+            Returns a list of selected columns or "exit" if the user chooses to exit.
+            """
             while True:
                 choice = input(
                     f"Enter column numbers (1-{len(df.columns)}), "
                     f"'{len(df.columns) + 1}' for All Columns, "
                     f"'{len(df.columns) + 2}' to Exit, "
-                    "or column names separated by commas (press Enter for All Columns): "
+                    "or column names separated by commas: "
                 ).strip()
+        
                 if not choice:
                     bold_and_large("No columns selected. Please try again.")
                     continue
-    
+        
                 choices = [ch.strip() for ch in choice.split(',')]
                 selected_columns = []
                 valid = True
-    
+        
                 for ch in choices:
                     if ch.isdigit():
                         col_num = int(ch)
                         if 1 <= col_num <= len(df.columns):
                             selected_columns.append(df.columns[col_num - 1])
                         elif col_num == len(df.columns) + 1:
-                            selected_columns = df.columns.tolist()
-                            break
+                            return df.columns.tolist()
                         elif col_num == len(df.columns) + 2:
                             return "exit"
                         else:
@@ -1051,17 +1177,68 @@ class analyisisToolkit:
                         if ch in df.columns:
                             selected_columns.append(ch)
                         elif ch.lower() == "all":
-                            selected_columns = df.columns.tolist()
+                            return df.columns.tolist()
                         elif ch.lower() == "exit":
                             return "exit"
                         else:
                             bold_and_large(f"Invalid choice: {ch}. Please try again.")
                             valid = False
                             break
-    
+        
                 if valid:
-                    return selected_columns if len(selected_columns) > 1 else selected_columns[0]
-    
+                    return selected_columns
+        def get_exact_columns(df, num_columns, prompt):
+            """
+            Prompts the user to select exactly `num_columns` columns from the DataFrame.
+            Returns a list of selected columns or "exit" if the user chooses to exit.
+            """
+            while True:
+                print(prompt)
+                choice = input(
+                    f"Enter {num_columns} column numbers (1-{len(df.columns)}), "
+                    f"'{len(df.columns) + 1}' for All Columns, "
+                    f"'{len(df.columns) + 2}' to Exit, "
+                    "or column names separated by commas: "
+                ).strip()
+        
+                if not choice:
+                    bold_and_large("No columns selected. Please try again.")
+                    continue
+        
+                choices = [ch.strip() for ch in choice.split(',')]
+                selected_columns = []
+                valid = True
+        
+                for ch in choices:
+                    if ch.isdigit():
+                        col_num = int(ch)
+                        if 1 <= col_num <= len(df.columns):
+                            selected_columns.append(df.columns[col_num - 1])
+                        elif col_num == len(df.columns) + 1:
+                            return df.columns.tolist()
+                        elif col_num == len(df.columns) + 2:
+                            return "exit"
+                        else:
+                            bold_and_large(f"Invalid choice: {ch}. Please try again.")
+                            valid = False
+                            break
+                    else:
+                        if ch in df.columns:
+                            selected_columns.append(ch)
+                        elif ch.lower() == "all":
+                            return df.columns.tolist()
+                        elif ch.lower() == "exit":
+                            return "exit"
+                        else:
+                            bold_and_large(f"Invalid choice: {ch}. Please try again.")
+                            valid = False
+                            break
+        
+                if valid:
+                    if len(selected_columns) == num_columns:
+                        return selected_columns
+                    else:
+                        bold_and_large(f"Please select exactly {num_columns} columns.")        
         def replace_placeholders(df):
             default_placeholders = ['?', '-', 'None', 'N/A', '']
             bold_and_large("Default placeholders to replace:")
@@ -1222,10 +1399,12 @@ class analyisisToolkit:
                     "Relationships Between Variables": [5, 11, 12, 21, 35, 34],
                     "Categorical Data": [7, 8, 15, 16, 19, 20, 27, 28],
                     "Time Series": [17, 31, 32, 33],
-                    "Advanced Visualizations": [25, 26, 29, 30, 36],
-                    "Data Quality": [1, 3, 4, 9, 10, 18]
+                    "Advanced Visualizations": [25, 26, 29, 30, 36, 37, 38, 39, 40],  # Added new visuals
+                    "Data Quality": [1, 3, 4, 9, 10, 18],
+                    "3D Visualizations": [41, 42, 43],  # New category for 3D visuals
+                    "Interactive Visualizations": [44, 45, 46]  # New category for interactive visuals
                 }
-        
+            
                 # Map visualization numbers to their names
                 visualization_names = {
                     1: "Missing Values",
@@ -1263,263 +1442,368 @@ class analyisisToolkit:
                     33: "Autocorrelation Plot",
                     34: "PairGrid",
                     35: "Joint Plot",
-                    36: "Dendrogram"
+                    36: "Dendrogram",
+                    37: "Contour Plot",  # New visualization
+                    38: "Surface Plot",  # New visualization
+                    39: "Streamgraph",  # New visualization
+                    40: "Network Graph",  # New visualization
+                    41: "3D Surface Plot",  # New 3D visualization
+                    42: "3D Bar Plot",  # New 3D visualization
+                    43: "3D Line Plot",  # New 3D visualization
+                    44: "Interactive Scatter Plot (Plotly)",  # New interactive visualization
+                    45: "Interactive Heatmap (Plotly)",  # New interactive visualization
+                    46: "Interactive Line Plot (Plotly)"  # New interactive visualization
                 }
-        
+            
                 # Display columns if requested
                 display_columns = input("\033[1mDo You Want To display Columns? (y/n):\033[0m ").strip().lower()
                 if display_columns == "y":
                     display_column_menu(df)
-                bold_and_large("Choose a category of visualizations:")
-                for i, category in enumerate(categories.keys(), start=1):
-                    print(f"{i}. {category}")
-                print("0. Exit")
-
+            
                 while True:
-                    # Display categories with bold text and larger messages
-
+                    # Display category menu
+                    bold_and_large("Choose a category of visualizations:")
+                    for i, category in enumerate(categories.keys(), start=1):
+                        print(f"{i}. {category}")
+                    print("0. Exit")
+            
                     # Get user's category choice
                     category_choice = input("Enter the category number: ").strip()
                     if category_choice == "0":
                         bold_and_large("Exiting visualization menu.")
                         break
-        
+            
                     try:
                         category_choice = int(category_choice)
                         if 1 <= category_choice <= len(categories):
                             category_name = list(categories.keys())[category_choice - 1]
                             visualizations = categories[category_name]
-        
-                            # Display visualizations in the chosen category with bold text
-                            bold_and_large(f"Visualizations in '{category_name}':")
-                            for viz in visualizations:
-                                print(f"{viz}. {visualization_names[viz]}")
-        
-                            # Get user's visualization choice
-                            viz_choice = input("Enter the visualization number (or 'back' to choose another category): ").strip()
-                            if viz_choice.lower() == "back":
-                                continue
-        
-                            try:
-                                viz_choice = int(viz_choice)
-                                if viz_choice in visualizations:
-                                    # Call the corresponding visualization function
-                                    bold_and_large(f"Generating {visualization_names[viz_choice]}...")
-                                    if viz_choice == 1:
-                                        analyisisToolkit.plot_missing_values(df)
-                                    elif viz_choice == 2:
-                                        analyisisToolkit.plot_correlation_heatmap(df)
-                                    elif viz_choice == 3:
-                                        analyisisToolkit.plot_skewness(df)
-                                    elif viz_choice == 4:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.visualize_outliers(df[column_choice] if isinstance(column_choice, list) else df[[column_choice]])
-                                    elif viz_choice == 5:
-                                        analyisisToolkit.plot_pairplot(df)
-                                    elif viz_choice == 6:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            for col in (column_choice if isinstance(column_choice, list) else [column_choice]):
-                                                analyisisToolkit.plot_distribution(df[col], title=f"Distribution Plot for {col}")
-                                    elif viz_choice == 7:
-                                        numeric_col = input("Enter numeric column name: ").strip()
-                                        categorical_col = input("Enter categorical column name: ").strip()
-                                        analyisisToolkit.plot_violin_comparison(df, numeric_col, categorical_col, title=f"Violin Plot: {numeric_col} by {categorical_col}")
-                                    elif viz_choice == 8:
-                                        numeric_col = input("Enter numeric column name: ").strip()
-                                        categorical_col = input("Enter categorical column name: ").strip()
-                                        analyisisToolkit.plot_swarm(df, numeric_col, categorical_col, title=f"Swarm Plot: {numeric_col} by {categorical_col}")
-                                    elif viz_choice == 9:
-                                        analyisisToolkit.plot_missing_heatmap(df, title="Missing Values Heatmap")
-                                    elif viz_choice == 10:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_qq(df[column_choice], title=f"QQ Plot for {column_choice}")
-                                    elif viz_choice == 11:
-                                        analyisisToolkit.plot_scatter_matrix(df, title="Scatterplot Matrix")
-                                    elif viz_choice == 12:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+            
+                            while True:  # Inner loop for visualization menu
+                                # Display visualizations in the chosen category with bold text
+                                bold_and_large(f"Visualizations in '{category_name}':")
+                                for viz in visualizations:
+                                    print(f"{viz}. {visualization_names[viz]}")
+                                print("Type 'back' to return to the category menu.")
+            
+                                # Get user's visualization choice
+                                viz_choice = input("Enter the visualization number: ").strip()
+                                if viz_choice.lower() == "back":
+                                    break  # Exit the inner loop to go back to the category menu
+            
+                                try:
+                                    viz_choice = int(viz_choice)
+                                    if viz_choice in visualizations:
+                                        # Call the corresponding visualization function
+                                        bold_and_large(f"Generating {visualization_names[viz_choice]}...")
+                                        if viz_choice == 1:
+                                            analyisisToolkit.plot_missing_values(df)
+                                        elif viz_choice == 2:
+                                            analyisisToolkit.plot_correlation_heatmap(df)
+                                        elif viz_choice == 3:
+                                            analyisisToolkit.plot_skewness(df)
+                                        elif viz_choice == 4:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_regression(df, x_col, y_col, title=f"Regression Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 13:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_pie(df, column=column_choice, title=f"Pie Plot for {column_choice}")
-                                    elif viz_choice == 14:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_histogram(df[column_choice], title=f"Histogram for {column_choice}")
-                                    elif viz_choice == 15:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+                                                analyisisToolkit.visualize_outliers(df[column_choice] if isinstance(column_choice, list) else df[[column_choice]])
+                                        elif viz_choice == 5:
+                                            analyisisToolkit.plot_pairplot(df)
+                                        elif viz_choice == 6:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_bar(df, x_col, y_col, title=f"Bar Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 16:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_count(df, column=column_choice, title=f"Count Plot for {column_choice}")
-                                    elif viz_choice == 17:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+                                                for col in (column_choice if isinstance(column_choice, list) else [column_choice]):
+                                                    analyisisToolkit.plot_distribution(df[col], title=f"Distribution Plot for {col}")
+                                        elif viz_choice == 7:
+                                            numeric_col = input("Enter numeric column name: ").strip()
+                                            categorical_col = input("Enter categorical column name: ").strip()
+                                            analyisisToolkit.plot_violin_comparison(df, numeric_col, categorical_col, title=f"Violin Plot: {numeric_col} by {categorical_col}")
+                                        elif viz_choice == 8:
+                                            numeric_col = input("Enter numeric column name: ").strip()
+                                            categorical_col = input("Enter categorical column name: ").strip()
+                                            analyisisToolkit.plot_swarm(df, numeric_col, categorical_col, title=f"Swarm Plot: {numeric_col} by {categorical_col}")
+                                        elif viz_choice == 9:
+                                            analyisisToolkit.plot_missing_heatmap(df, title="Missing Values Heatmap")
+                                        elif viz_choice == 10:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_line(df, x_col, y_col, title=f"Line Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 18:
-                                        analyisisToolkit.plot_heatmap(df, title="General Heatmap")
-                                    elif viz_choice == 19:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_box(df, column=column_choice, title=f"Box Plot for {column_choice}")
-                                    elif viz_choice == 20:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_area(df, column=column_choice, title=f"Area Plot for {column_choice}")
-                                    elif viz_choice == 21:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+                                                analyisisToolkit.plot_qq(df[column_choice], title=f"QQ Plot for {column_choice}")
+                                        elif viz_choice == 11:
+                                            analyisisToolkit.plot_scatter_matrix(df, title="Scatterplot Matrix")
+                                        elif viz_choice == 12:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_hexbin(df, x_col, y_col, title=f"Hexbin Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 22:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_kde(df[column_choice], title=f"KDE Plot for {column_choice}")
-                                    elif viz_choice == 23:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
-                                                bold_and_large("No action taken.")
-                                            else:
-                                                analyisisToolkit.plot_facet_grid(df, x_col, y_col, title=f"Facet Grid: {x_col} vs {y_col}")
-                                    elif viz_choice == 24:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_ridge(df, column=column_choice, title=f"Ridge Plot for {column_choice}")
-                                    elif viz_choice == 25:
-                                        class_column = input("Enter the column name to use for grouping (e.g., 'Manufacturer'): ").strip()
-                                        analyisisToolkit.plot_parallel_coordinates(df, class_column=class_column, title="Parallel Coordinates Plot")
-                                    elif viz_choice == 26:
-                                        analyisisToolkit.plot_radar(df, title="Radar Chart")
-                                    elif viz_choice == 27:
-                                        analyisisToolkit.plot_treemap(df, title="Treemap")
-                                    elif viz_choice == 28:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
-                                                bold_and_large("No action taken.")
-                                            else:
-                                                size_col = get_column_choice(df)
-                                                if size_col == "exit":
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    analyisisToolkit.plot_bubble(df, x_col, y_col, size_col, title=f"Bubble Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 29:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_wordcloud(df[column_choice], title=f"Word Cloud for {column_choice}")
-                                    elif viz_choice == 30:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+                                                    analyisisToolkit.plot_regression(df, x_col, y_col, title=f"Regression Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 13:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                z_col = get_column_choice(df)
-                                                if z_col == "exit":
+                                                analyisisToolkit.plot_pie(df, column=column_choice, title=f"Pie Plot for {column_choice}")
+                                        elif viz_choice == 14:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_histogram(df[column_choice], title=f"Histogram for {column_choice}")
+                                        elif viz_choice == 15:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    analyisisToolkit.plot_3d_scatter(df, x_col, y_col, z_col, title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}")
-                                    elif viz_choice == 31:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_time_series_decomposition(df[column_choice], title=f"Time Series Decomposition for {column_choice}")
-                                    elif viz_choice == 32:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_lag(df[column_choice], title=f"Lag Plot for {column_choice}")
-                                    elif viz_choice == 33:
-                                        column_choice = get_column_choice(df)
-                                        if column_choice == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            analyisisToolkit.plot_autocorrelation(df[column_choice], title=f"Autocorrelation Plot for {column_choice}")
-                                    elif viz_choice == 34:
-                                        analyisisToolkit.plot_pairgrid(df, title="PairGrid")
-                                    elif viz_choice == 35:
-                                        x_col = get_column_choice(df)
-                                        if x_col == "exit":
-                                            bold_and_large("No action taken.")
-                                        else:
-                                            y_col = get_column_choice(df)
-                                            if y_col == "exit":
+                                                    analyisisToolkit.plot_bar(df, x_col, y_col, title=f"Bar Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 16:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_joint(df, x_col, y_col, title=f"Joint Plot: {x_col} vs {y_col}")
-                                    elif viz_choice == 36:
-                                        analyisisToolkit.plot_dendrogram(df, title="Dendrogram")
-                                else:
-                                    bold_and_large("Invalid visualization number. Please try again.")
-                            except ValueError:
-                                bold_and_large("Invalid input. Please enter a number or 'back'.")
+                                                analyisisToolkit.plot_count(df, column=column_choice, title=f"Count Plot for {column_choice}")
+                                        elif viz_choice == 17:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    analyisisToolkit.plot_line(df, x_col, y_col, title=f"Line Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 18:
+                                            analyisisToolkit.plot_heatmap(df, title="General Heatmap")
+                                        elif viz_choice == 19:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_box(df, column=column_choice, title=f"Box Plot for {column_choice}")
+                                        elif viz_choice == 20:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_area(df, column=column_choice, title=f"Area Plot for {column_choice}")
+                                        elif viz_choice == 21:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    analyisisToolkit.plot_hexbin(df, x_col, y_col, title=f"Hexbin Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 22:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_kde(df[column_choice], title=f"KDE Plot for {column_choice}")
+                                        elif viz_choice == 23:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    analyisisToolkit.plot_facet_grid(df, x_col, y_col, title=f"Facet Grid: {x_col} vs {y_col}")
+                                        elif viz_choice == 24:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_ridge(df, column=column_choice, title=f"Ridge Plot for {column_choice}")
+                                        elif viz_choice == 25:
+                                            class_column = input("Enter the column name to use for grouping (e.g., 'Manufacturer'): ").strip()
+                                            analyisisToolkit.plot_parallel_coordinates(df, class_column=class_column, title="Parallel Coordinates Plot")
+                                        elif viz_choice == 26:
+                                            analyisisToolkit.plot_radar(df, title="Radar Chart")
+                                        elif viz_choice == 27:
+                                            analyisisToolkit.plot_treemap(df, title="Treemap")
+                                        elif viz_choice == 28:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    size_col = get_column_choice(df)
+                                                    if size_col == "exit":
+                                                        bold_and_large("No action taken.")
+                                                    else:
+                                                        analyisisToolkit.plot_bubble(df, x_col, y_col, size_col, title=f"Bubble Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 29:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_wordcloud(df[column_choice], title=f"Word Cloud for {column_choice}")
+                                        elif viz_choice == 30:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    z_col = get_column_choice(df)
+                                                    if z_col == "exit":
+                                                        bold_and_large("No action taken.")
+                                                    else:
+                                                        analyisisToolkit.plot_3d_scatter(df, x_col, y_col, z_col, title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}")
+                                        elif viz_choice == 31:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                analyisisToolkit.plot_time_series_decomposition(df[column_choice], title=f"Time Series Decomposition for {column_choice}")
+                                        elif viz_choice == 32:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                Toolkit.plot_lag(df[column_choice], title=f"Lag Plot for {column_choice}")
+                                        elif viz_choice == 33:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                Toolkit.plot_autocorrelation(df[column_choice], title=f"Autocorrelation Plot for {column_choice}")
+                                        elif viz_choice == 34:
+                                            analyisisToolkit.plot_pairgrid(df, title="PairGrid")
+                                        elif viz_choice == 35:
+                                            x_col = get_column_choice(df)
+                                            if x_col == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                y_col = get_column_choice(df)
+                                                if y_col == "exit":
+                                                    bold_and_large("No action taken.")
+                                                else:
+                                                    Toolkit.plot_joint(df, x_col, y_col, title=f"Joint Plot: {x_col} vs {y_col}")
+                                        elif viz_choice == 36:
+                                            analyisisToolkit.plot_dendrogram(df, title="Dendrogram")
+                                        # Visualization 37: Contour Plot
+                                        elif viz_choice == 37:
+                                            columns = get_exact_columns(df, 2, "Select exactly 2 columns for the Contour Plot (x, y):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col = columns
+                                                Toolkit.plot_contour(df, x_col, y_col, title=f"Contour Plot: {x_col} vs {y_col}")
+                                        
+                                        # Visualization 38: Surface Plot
+                                        elif viz_choice == 38:
+                                            columns = get_exact_columns(df, 3, "Select exactly 3 columns for the Surface Plot (x, y, z):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col, z_col = columns
+                                                Toolkit.plot_surface(df, x_col, y_col, z_col, title=f"Surface Plot: {x_col} vs {y_col} vs {z_col}")
+                                        
+                                        # Visualization 39: Streamgraph
+                                        elif viz_choice == 39:
+                                            column_choice = get_column_choice(df)
+                                            if column_choice == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                Toolkit.plot_streamgraph(df, column=column_choice, title=f"Streamgraph for {column_choice}")
+                                        
+                                        # Visualization 40: Network Graph
+                                        elif viz_choice == 40:
+                                            source_col = input("Enter the source column name: ").strip()
+                                            target_col = input("Enter the target column name: ").strip()
+                                            Toolkit.plot_network_graph(df, source_col, target_col, title="Network Graph")
+                                        
+                                        # Visualization 41: 3D Surface Plot
+                                        elif viz_choice == 41:
+                                            columns = get_exact_columns(df, 3, "Select exactly 3 columns for the 3D Surface Plot (x, y, z):")
+                                            print(f"Selected columns: {columns}")  # Debug statement
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                try:
+                                                    x_col, y_col, z_col = columns
+                                                    # Validate that the selected columns exist in the DataFrame
+                                                    if x_col not in df.columns or y_col not in df.columns or z_col not in df.columns:
+                                                        print("Error: One or more selected columns do not exist in the DataFrame.")
+                                                    else:
+                                                        # Validate that the selected columns are numeric
+                                                        if not all(df[col].dtype in ['int64', 'float64'] for col in [x_col, y_col, z_col]):
+                                                            print("Error: Selected columns must be numeric.")
+                                                        else:
+                                                            # Call the method on the toolkit instance
+                                                            Toolkit.plot_3d_surface(df, x_col, y_col, z_col, title=f"3D Surface Plot: {x_col} vs {y_col} vs {z_col}")
+                                                except ValueError:
+                                                    print("Error: Exactly 3 columns must be selected.")                                                    
+                                                # Visualization 42: 3D Bar Plot
+                                        elif viz_choice == 42:
+                                            columns = get_exact_columns(df, 3, "Select exactly 3 columns for the 3D Bar Plot (x, y, z):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col, z_col = columns
+                                                Toolkit.plot_3d_bar(df, x_col, y_col, z_col, title=f"3D Bar Plot: {x_col} vs {y_col} vs {z_col}")
+                                        
+                                        # Visualization 43: 3D Line Plot
+                                        elif viz_choice == 43:
+                                            columns = get_exact_columns(df, 3, "Select exactly 3 columns for the 3D Line Plot (x, y, z):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col, z_col = columns
+                                                Toolkit.plot_3d_line(df, x_col, y_col, z_col, title=f"3D Line Plot: {x_col} vs {y_col} vs {z_col}")
+                                        
+                                        # Visualization 44: Interactive Scatter Plot
+                                        elif viz_choice == 44:
+                                            columns = get_exact_columns(df, 2, "Select exactly 2 columns for the Interactive Scatter Plot (x, y):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col = columns
+                                                Toolkit.plot_interactive_scatter(df, x_col, y_col, title=f"Interactive Scatter Plot: {x_col} vs {y_col}")
+                                        
+                                        # Visualization 45: Interactive Heatmap
+                                        elif viz_choice == 45:
+                                            Toolkit.plot_interactive_heatmap(df, title="Interactive Heatmap")
+                                        
+                                        # Visualization 46: Interactive Line Plot
+                                        elif viz_choice == 46:
+                                            columns = get_exact_columns(df, 2, "Select exactly 2 columns for the Interactive Line Plot (x, y):")
+                                            if columns == "exit":
+                                                bold_and_large("No action taken.")
+                                            else:
+                                                x_col, y_col = columns
+                                                Toolkit.plot_interactive_line(df, x_col, y_col, title=f"Interactive Line Plot: {x_col} vs {y_col}")                                        
+                                        # Pause to let the user see the visualization
+                                        input("\nPress Enter to continue...")
+                                    else:
+                                        bold_and_large("Invalid visualization number. Please try again.")
+                                except ValueError:
+                                    bold_and_large("Invalid input. Please enter a number or 'back'.")
                         else:
                             bold_and_large("Invalid category number. Please try again.")
                     except ValueError:
                         bold_and_large("Invalid input. Please enter a number.")
-                
             elif choice == 12:
                 report_filename = input("Enter the filename for the report (default: business_data_report.html): ").strip()
                 report_filename = report_filename if report_filename else "business_data_report.html"
