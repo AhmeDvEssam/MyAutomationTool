@@ -248,17 +248,34 @@ class analyisisToolkit:
         plt.ylabel(numeric_col)
         plt.show()
         
-    def plot_swarm(df, numeric_col, categorical_col, title="Swarm Plot"):
+    def plot_swarm(df, numeric_col, categorical_col, title="Swarm Plot", marker_size=3, use_strip=False):
         """
-        Plot a swarm plot to visualize individual data points.
+        Plot a swarm plot or strip plot to visualize individual data points.
+    
+        Parameters:
+            df (pd.DataFrame): The DataFrame containing the data.
+            numeric_col (str): The name of the numeric column for the y-axis.
+            categorical_col (str): The name of the categorical column for the x-axis.
+            title (str): The title of the plot (default: "Swarm Plot").
+            marker_size (int): The size of the markers in the plot (default: 3).
+            use_strip (bool): If True, use a strip plot instead of a swarm plot (default: False).
         """
-        plt.figure(figsize=(12, 6))
-        sns.swarmplot(x=categorical_col, y=numeric_col, data=df,  hue=categorical_col, palette="coolwarm", legend=False, size=3)
-        plt.title(title)
-        plt.xlabel(categorical_col)
-        plt.ylabel(numeric_col)
-        plt.show()
+        plt.figure(figsize=(14, 8))
+        if use_strip:
+            # Use a strip plot if the data is too dense for a swarm plot
+            sns.stripplot(x=categorical_col, y=numeric_col, data=df, hue=categorical_col, 
+                          palette="coolwarm", legend=False, size=marker_size, jitter=True)
+        else:
+            # Use a swarm plot
+            sns.swarmplot(x=categorical_col, y=numeric_col, data=df, hue=categorical_col, 
+                          palette="coolwarm", legend=False, size=marker_size)
         
+        plt.title(title, fontsize=16)
+        plt.xlabel(categorical_col, fontsize=14)
+        plt.ylabel(numeric_col, fontsize=14)
+        plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+        plt.tight_layout()  # Adjust layout to prevent overlapping labels
+        plt.show()        
     def plot_missing_heatmap(df, title="Missing Values Heatmap"):
         """
         Plot a heatmap to visualize missing values in the dataset.
@@ -358,17 +375,33 @@ class analyisisToolkit:
         plt.title(title)
         plt.show()
     
-    def plot_bar(df, x_col, y_col, title="Bar Plot"):
+    def plot_bar(df, x_col, y_col, title="Bar Plot"):   ################### 15
         sns.barplot(x=x_col, y=y_col, data=df)
         plt.title(title)
         plt.show()
     
-    def plot_count(df, column, title="Count Plot"):
-        sns.countplot(x=column, data=df)
-        plt.title(title)
-        plt.show()
+    def plot_count(df, columns, title="Count Plot"):
+        """
+        Plots count plots for one or more categorical columns in a DataFrame.
     
-    def plot_line(df, x_col, y_col, title="Line Plot"):
+        Parameters:
+            df (DataFrame): The input DataFrame.
+            columns (list or str): Column(s) to plot. Can be a single column name or a list of column names.
+            title (str): Base title for the plots. Defaults to "Count Plot".
+        """
+        # Ensure `columns` is a list for consistent handling
+        if isinstance(columns, str):
+            columns = [columns]  
+        # Create a count plot for each column
+        for column in columns:
+            plt.figure(figsize=(8, 5))  # Set a size for each plot
+            sns.countplot(x=column, data=df)
+            plt.title(f"{title} - {column}")
+            plt.xlabel(column)
+            plt.ylabel("Count")
+            plt.show()
+
+    def plot_line(df, x_col, y_col, title="Line Plot"): ############ 17
         sns.lineplot(x=x_col, y=y_col, data=df)
         plt.title(title)
         plt.show()
@@ -385,23 +418,56 @@ class analyisisToolkit:
         sns.heatmap(numeric_df, annot=True, cmap='coolwarm', fmt=".2f")
         plt.title(title)
         plt.show()    
-    def plot_box(df, column, title="Box Plot"):
-        sns.boxplot(x=df[column])
-        plt.title(title)
-        plt.show()
+        
+    def plot_box(df, columns, title="Box Plot"):
+        """
+        Plots a box plot for one or more columns in a DataFrame.
     
-    def plot_area(df, column, title="Area Plot"):
-        df[column].plot.area()
+        Parameters:
+            df (DataFrame): The input DataFrame.
+            columns (list or str): Column(s) to plot. Can be a single column name or a list of column names.
+            title (str): Title of the plot. Defaults to "Box Plot".
+        """
+        # Ensure columns is a list for consistent handling
+        if isinstance(columns, str):
+            columns = [columns]
+        # Filter the DataFrame to only include the specified columns
+        selected_data = df[columns]
+        # Create the box plot
+        sns.boxplot(data=selected_data)
         plt.title(title)
+        plt.xlabel("Columns")
+        plt.ylabel("Values")
         plt.show()
+
+    def plot_area(df, columns, title="Area Plot"):
+        """
+        Plots an area chart for the specified columns in a DataFrame.
     
-    def plot_hexbin(df, x_col, y_col, title="Hexbin Plot"):
+        Parameters:
+            df (DataFrame): The input DataFrame.
+            columns (list or str): Column(s) to plot. Can be a single column name or a list of column names.
+            title (str): Title of the plot. Defaults to "Area Plot".
+        """
+        # Ensure columns is a list for consistent handling
+        if isinstance(columns, str):
+            columns = [columns]
+        # Plot the area chart
+        df[columns].plot.area(alpha=0.6)
+        plt.title(title)
+        plt.ylabel("Values")
+        plt.xlabel("Index")
+        plt.show()   
+    
+    def plot_hexbin(df, x_col, y_col, title="Hexbin Plot"):  ################ 21
         sns.jointplot(x=x_col, y=y_col, data=df, kind='hex')
         plt.title(title)
         plt.show()
     
-    def plot_kde(df, title="KDE Plot"):
-        sns.kdeplot(df)
+    def plot_kde(df,columns, title="KDE Plot"):
+        if isinstance(columns, str):
+            columns = [columns]
+        sns.kdeplot(df[columns])
         plt.title(title)
         plt.show()
     
@@ -411,8 +477,10 @@ class analyisisToolkit:
         plt.title(title)
         plt.show()
     
-    def plot_ridge(df, column, title="Ridge Plot"):
-        joypy.joyplot(df, column=column)
+    def plot_ridge(df, columns, title="Ridge Plot"):
+        if isinstance(columns, str):
+            columns = [columns]
+        joypy.joyplot(df[columns])
         plt.title(title)
         plt.show()
     
@@ -485,7 +553,7 @@ class analyisisToolkit:
         plt.title(title)
         plt.axis('off')  # Hide the axes
         plt.show()        
-    def plot_bubble(df, x_col, y_col, size_col, title="Bubble Plot"):
+    def plot_bubble(df, x_col, y_col, size_col, title="Bubble Plot"):  ######28
         sns.scatterplot(x=x_col, y=y_col, size=size_col, data=df)
         plt.title(title)
         plt.show()
@@ -517,7 +585,7 @@ class analyisisToolkit:
         fig = px.scatter_3d(df, x=x_col, y=y_col, z=z_col)
         fig.show()
     
-    def plot_time_series_decomposition(series, period=None, title="Time Series Decomposition"):
+    def plot_time_series_decomposition(series, period=None, title="Time Series Decomposition"):     ############################### 31
         # Check if the input is a pandas Series
         if not isinstance(series, pd.Series):
             print("Input must be a pandas Series.")
@@ -545,12 +613,12 @@ class analyisisToolkit:
         except Exception as e:
             print(f"An error occurred during time series decomposition: {e}")       
         
-    def plot_lag(series, title="Lag Plot"):
+    def plot_lag(series, title="Lag Plot"): ###########################32
         pd.plotting.lag_plot(series)
         plt.title(title)
         plt.show()
 
-    def plot_autocorrelation(series, title="Autocorrelation Plot"):
+    def plot_autocorrelation(series, title="Autocorrelation Plot"):  ###################### 33
         pd.plotting.autocorrelation_plot(series)
         plt.title(title)
         plt.show()
@@ -561,7 +629,7 @@ class analyisisToolkit:
         plt.title(title)
         plt.show()
     
-    def plot_joint(df, x_col, y_col, title="Joint Plot"):
+    def plot_joint(df, x_col, y_col,title):   #############35
         sns.jointplot(x=x_col, y=y_col, data=df)
         plt.title(title)
         plt.show()
@@ -609,16 +677,20 @@ class analyisisToolkit:
         plt.show()
 
     # Visualization 39: Streamgraph
-    def plot_streamgraph(self, df, column, title):
+    def plot_streamgraph(self, df, columns, title):
         """
-        Plots a streamgraph.
+        Plots a streamgraph using multiple numeric columns.
         """
-        df.set_index(column).T.plot(kind='area', stacked=True, colormap='viridis', figsize=(10, 6))
+        # Check if all selected columns are numeric
+        for col in columns:
+            if not pd.api.types.is_numeric_dtype(df[col]):
+                raise ValueError(f"Column '{col}' is not numeric. Streamgraph requires numeric data.")
+        # Plot the streamgraph
+        df.set_index(columns[0])[columns[1:]].plot(kind='area', stacked=True, colormap='viridis', figsize=(10, 6))
         plt.title(title)
-        plt.xlabel('X-axis')
-        plt.ylabel('Y-axis')
-        plt.show()
-
+        plt.xlabel(columns[0])  # Use the first column as the x-axis label
+        plt.ylabel('Value')
+        plt.show()    
     # Visualization 40: Network Graph
     def plot_network_graph(self, df, source_col, target_col, title):
         """
@@ -1139,10 +1211,11 @@ class analyisisToolkit:
             print(f"{len(df.columns) + 1}. All Columns")
             print(f"{len(df.columns) + 2}. Exit")
     
-        def get_column_choice(df):
+        def get_column_choice(df, allow_multiple=False):
             """
             Prompts the user to select one or more columns from the DataFrame.
-            Returns a list of selected columns or "exit" if the user chooses to exit.
+            If allow_multiple is False, returns a single column name (string).
+            If allow_multiple is True, returns a list of column names.
             """
             while True:
                 choice = input(
@@ -1166,7 +1239,7 @@ class analyisisToolkit:
                         if 1 <= col_num <= len(df.columns):
                             selected_columns.append(df.columns[col_num - 1])
                         elif col_num == len(df.columns) + 1:
-                            return df.columns.tolist()
+                            return df.columns.tolist() if allow_multiple else df.columns[0]
                         elif col_num == len(df.columns) + 2:
                             return "exit"
                         else:
@@ -1177,7 +1250,7 @@ class analyisisToolkit:
                         if ch in df.columns:
                             selected_columns.append(ch)
                         elif ch.lower() == "all":
-                            return df.columns.tolist()
+                            return df.columns.tolist() if allow_multiple else df.columns[0]
                         elif ch.lower() == "exit":
                             return "exit"
                         else:
@@ -1186,7 +1259,10 @@ class analyisisToolkit:
                             break
         
                 if valid:
-                    return selected_columns
+                    if allow_multiple:
+                        return selected_columns
+                    else:
+                        return selected_columns[0] if selected_columns else None                    
         def get_exact_columns(df, num_columns, prompt):
             """
             Prompts the user to select exactly `num_columns` columns from the DataFrame.
@@ -1524,7 +1600,23 @@ class analyisisToolkit:
                                         elif viz_choice == 8:
                                             numeric_col = input("Enter numeric column name: ").strip()
                                             categorical_col = input("Enter categorical column name: ").strip()
-                                            analyisisToolkit.plot_swarm(df, numeric_col, categorical_col, title=f"Swarm Plot: {numeric_col} by {categorical_col}")
+                                            # Check if the columns exist in the DataFrame
+                                            if numeric_col not in df.columns or categorical_col not in df.columns:
+                                                print("Error: One or both columns do not exist in the DataFrame.")
+                                            else:
+                                                # Ask the user if they want to use a strip plot instead of a swarm plot
+                                                use_strip = input("The data seems dense. Use a strip plot instead? (y/n): ").strip().lower() == 'y'
+                                                # Ask the user to adjust the marker size
+                                                marker_size = int(input("Enter marker size (default is 3, reduce for dense data): ").strip() or 3)
+                                                # Generate the plot
+                                                analyisisToolkit.plot_swarm(
+                                                    df, 
+                                                    numeric_col=numeric_col, 
+                                                    categorical_col=categorical_col, 
+                                                    title=f"Swarm Plot: {numeric_col} by {categorical_col}", 
+                                                    marker_size=marker_size, 
+                                                    use_strip=use_strip
+                                                )                                            
                                         elif viz_choice == 9:
                                             analyisisToolkit.plot_missing_heatmap(df, title="Missing Values Heatmap")
                                         elif viz_choice == 10:
@@ -1566,13 +1658,13 @@ class analyisisToolkit:
                                                 if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    analyisisToolkit.plot_bar(df, x_col, y_col, title=f"Bar Plot: {x_col} vs {y_col}")
+                                                    analyisisToolkit.plot_bar(df, x_col, y_col, title=f"Bar Plot: {x_col} vs {y_col}")   ###########################
                                         elif viz_choice == 16:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df, allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_count(df, column=column_choice, title=f"Count Plot for {column_choice}")
+                                                analyisisToolkit.plot_count(df, columns=column_choice, title=f"Count Plot for {column_choice}")   #########################
                                         elif viz_choice == 17:
                                             x_col = get_column_choice(df)
                                             if x_col == "exit":
@@ -1582,21 +1674,21 @@ class analyisisToolkit:
                                                 if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    analyisisToolkit.plot_line(df, x_col, y_col, title=f"Line Plot: {x_col} vs {y_col}")
+                                                    analyisisToolkit.plot_line(df, x_col, y_col, title=f"Line Plot: {x_col} vs {y_col}")  ####################
                                         elif viz_choice == 18:
                                             analyisisToolkit.plot_heatmap(df, title="General Heatmap")
                                         elif viz_choice == 19:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_box(df, column=column_choice, title=f"Box Plot for {column_choice}")
+                                                analyisisToolkit.plot_box(df, columns=column_choice, title=f"Box Plot for {column_choice}")  ######################
                                         elif viz_choice == 20:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_area(df, column=column_choice, title=f"Area Plot for {column_choice}")
+                                                analyisisToolkit.plot_area(df, columns=column_choice, title=f"Area Plot for {column_choice}")
                                         elif viz_choice == 21:
                                             x_col = get_column_choice(df)
                                             if x_col == "exit":
@@ -1606,13 +1698,14 @@ class analyisisToolkit:
                                                 if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    analyisisToolkit.plot_hexbin(df, x_col, y_col, title=f"Hexbin Plot: {x_col} vs {y_col}")
+                                                    # Call the updated plot_hexbin function with explicit keyword arguments
+                                                    analyisisToolkit.plot_hexbin(df, x_col=x_col, y_col=y_col, title=f"Hexbin Plot: {x_col} vs {y_col}")                                                        
                                         elif viz_choice == 22:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple =True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
-                                            else:
-                                                analyisisToolkit.plot_kde(df[column_choice], title=f"KDE Plot for {column_choice}")
+                                            else:    
+                                                analyisisToolkit.plot_kde(df,columns = column_choice, title=f"KDE Plot for {column_choice}")
                                         elif viz_choice == 23:
                                             x_col = get_column_choice(df)
                                             if x_col == "exit":
@@ -1624,11 +1717,11 @@ class analyisisToolkit:
                                                 else:
                                                     analyisisToolkit.plot_facet_grid(df, x_col, y_col, title=f"Facet Grid: {x_col} vs {y_col}")
                                         elif viz_choice == 24:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_ridge(df, column=column_choice, title=f"Ridge Plot for {column_choice}")
+                                                analyisisToolkit.plot_ridge(df, columns=column_choice, title=f"Ridge Plot for {column_choice}") ################################
                                         elif viz_choice == 25:
                                             class_column = input("Enter the column name to use for grouping (e.g., 'Manufacturer'): ").strip()
                                             analyisisToolkit.plot_parallel_coordinates(df, class_column=class_column, title="Parallel Coordinates Plot")
@@ -1649,7 +1742,7 @@ class analyisisToolkit:
                                                     if size_col == "exit":
                                                         bold_and_large("No action taken.")
                                                     else:
-                                                        analyisisToolkit.plot_bubble(df, x_col, y_col, size_col, title=f"Bubble Plot: {x_col} vs {y_col}")
+                                                        analyisisToolkit.plot_bubble(df, x_col, y_col, size_col, title=f"Bubble Plot: {x_col} vs {y_col}")    ################28 
                                         elif viz_choice == 29:
                                             column_choice = get_column_choice(df)
                                             if column_choice == "exit":
@@ -1675,19 +1768,19 @@ class analyisisToolkit:
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                analyisisToolkit.plot_time_series_decomposition(df[column_choice], title=f"Time Series Decomposition for {column_choice}")
+                                                analyisisToolkit.plot_time_series_decomposition(df[column_choice], title=f"Time Series Decomposition for {column_choice}")   #####################
                                         elif viz_choice == 32:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                Toolkit.plot_lag(df[column_choice], title=f"Lag Plot for {column_choice}")
+                                                analyisisToolkit.plot_lag(df[column_choice], title=f"Lag Plot for {column_choice}") ############################
                                         elif viz_choice == 33:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                Toolkit.plot_autocorrelation(df[column_choice], title=f"Autocorrelation Plot for {column_choice}")
+                                                analyisisToolkit.plot_autocorrelation(df[column_choice], title=f"Autocorrelation Plot for {column_choice}")   #######################
                                         elif viz_choice == 34:
                                             analyisisToolkit.plot_pairgrid(df, title="PairGrid")
                                         elif viz_choice == 35:
@@ -1699,7 +1792,7 @@ class analyisisToolkit:
                                                 if y_col == "exit":
                                                     bold_and_large("No action taken.")
                                                 else:
-                                                    Toolkit.plot_joint(df, x_col, y_col, title=f"Joint Plot: {x_col} vs {y_col}")
+                                                    analyisisToolkit.plot_joint(df, x_col, y_col, title=f"Joint Plot: {x_col} vs {y_col}")   ###################################
                                         elif viz_choice == 36:
                                             analyisisToolkit.plot_dendrogram(df, title="Dendrogram")
                                         # Visualization 37: Contour Plot
@@ -1722,12 +1815,16 @@ class analyisisToolkit:
                                         
                                         # Visualization 39: Streamgraph
                                         elif viz_choice == 39:
-                                            column_choice = get_column_choice(df)
-                                            if column_choice == "exit":
+                                            bold_and_large("Select multiple numeric columns for the streamgraph.")
+                                            columns = get_column_choice(df, allow_multiple=True)
+                                            if columns == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
-                                                Toolkit.plot_streamgraph(df, column=column_choice, title=f"Streamgraph for {column_choice}")
-                                        
+                                                # Ensure at least two columns are selected
+                                                if len(columns) >= 2:
+                                                    Toolkit.plot_streamgraph(df, columns=columns, title=f"Streamgraph for {', '.join(columns)}")
+                                                else:
+                                                    bold_and_large("Please select at least two numeric columns for the streamgraph.")                                        
                                         # Visualization 40: Network Graph
                                         elif viz_choice == 40:
                                             source_col = input("Enter the source column name: ").strip()
