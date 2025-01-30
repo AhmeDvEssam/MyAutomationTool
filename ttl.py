@@ -829,17 +829,6 @@ class analyisisToolkit:
         else:
             return series
     
-    # Function to remove outliers using IQR
-    # def remove_outliers_iqr(series):
-    #     Q1 = series.quantile(0.25)
-    #     Q3 = series.quantile(0.75)
-    #     IQR = Q3 - Q1
-    #     lower_bound = Q1 - 1.5 * IQR
-    #     upper_bound = Q3 + 1.5 * IQR
-    #     # Replace outliers with NaN
-    #     series = series.where((series >= lower_bound) & (series <= upper_bound), np.nan)
-    #     return series
-    # --- Outlier Handling Functions ---
     def remove_outliers_iqr(data, column):
         """Remove outliers using IQR."""
         Q1 = data[column].quantile(0.25)
@@ -889,7 +878,7 @@ class analyisisToolkit:
         median = data[column].median()
         iqr = data[column].quantile(0.75) - data[column].quantile(0.25)
         data.loc[:, column] = (data[column] - median) / iqr  # Use .loc to avoid SettingWithCopyWarning
-        return data
+        return data            
     
 
     def describe_pluss(df):
@@ -965,7 +954,69 @@ class analyisisToolkit:
                 else:
                     return "Robust Scaling"
             else:
-                return "No Action Needed"                
+                return "No Action Needed"       
+
+        def group_by(df):
+            """
+            Groups the DataFrame by selected columns and applies an aggregation operation on a numeric column.
+            """
+            # Step 1: Ask the user to select columns to group by
+            bold_and_large("Select columns to group by:")
+            group_columns = get_column_choice(df, allow_multiple=True)
+            if group_columns == "exit":
+                bold_and_large("No columns selected. Exiting group_by function.")
+                return df
+            # Step 2: Ask the user to select the numeric column to aggregate
+            bold_and_large("Select the numeric column to aggregate:")
+            numeric_column = get_column_choice(df)
+            if numeric_column == "exit":
+                bold_and_large("No numeric column selected. Exiting group_by function.")
+                return df
+        
+            # Ensure the selected column is numeric
+            if not pd.api.types.is_numeric_dtype(df[numeric_column]):
+                bold_and_large(f"Column '{numeric_column}' is not numeric. Please select a numeric column.")
+                return df
+        
+            # Step 3: Ask the user to choose the aggregation operation
+            bold_and_large("Choose the aggregation operation:")
+            print("1. Mean")
+            print("2. Sum")
+            print("3. Max")
+            print("4. Min")
+            print("5. Count")
+            print("6. Median")
+            print("7. Standard Deviation")
+            operation_choice = input("Enter the number of the operation: ").strip()
+        
+            # Map the user's choice to the corresponding aggregation function
+            operation_map = {
+                '1': 'mean',
+                '2': 'sum',
+                '3': 'max',
+                '4': 'min',
+                '5': 'count',
+                '6': 'median',
+                '7': 'std'
+            }
+        
+            if operation_choice not in operation_map:
+                bold_and_large("Invalid operation choice. Exiting group_by function.")
+                return df
+        
+            operation = operation_map[operation_choice]
+        
+            # Perform the group by and aggregation
+            grouped_df = df.groupby(group_columns)[numeric_column].agg(operation).reset_index()
+        
+            # Display the result
+            bold_and_large(f"Grouped DataFrame with {operation} of {numeric_column}:")
+            display(grouped_df)
+        
+            # Return the grouped DataFrame
+            return grouped_df
+
+        
     
         def rename_columns_interactive(df):
             """
@@ -1262,7 +1313,11 @@ class analyisisToolkit:
                     if allow_multiple:
                         return selected_columns
                     else:
-                        return selected_columns[0] if selected_columns else None                    
+                        return selected_columns[0] if selected_columns else None     
+        def slice(df):
+            y = get_column_choice(df,allow_multiple=True)
+            x = get_column_choice(df)
+            return df.loc[0:x,y]
         def get_exact_columns(df, num_columns, prompt):
             """
             Prompts the user to select exactly `num_columns` columns from the DataFrame.
@@ -1984,6 +2039,9 @@ class analyisisToolkit:
                 bold_and_large("Columns have been renamed.")
                 summary = update_summary(df)
                 display(summary)
+            elif choice == 17:
+                group_by(df)
+                return df
             else:
                 bold_and_large("Invalid choice. Please try again.")
             if choice not in [1, 2, 6, 11, 12, 13, 14, 16]:
@@ -2019,7 +2077,8 @@ class analyisisToolkit:
             13: "Handle Outliers with User Choice",
             14: "Analyze Correlations",
             15: "Remove Unnecessary columns",
-            16: "Rename Columns"
+            16: "Rename Columns",
+            17: "Group By and Aggregate"
         }
         available_options = all_options.copy()
     
