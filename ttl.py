@@ -785,6 +785,47 @@ class analyisisToolkit:
         df_imputed[df_numeric.columns] = df_imputed_numeric
         return df_imputed
 
+    def slice_df(df):
+        y = get_column_choice(df, allow_multiple=True)
+        x = input('Enter the range of rows (e.g., 0,5): ').split(',')
+        
+        try:
+            start, end = int(x[0]), int(x[-1])
+            return df.loc[start:end, y]
+        except (ValueError, IndexError):
+            print("Invalid row range. Please enter two valid numbers separated by a comma.")
+            return None
+    
+    def filter(df):
+        print("Available columns:", df.columns.tolist())
+        print("Enter a filter expression using column names, conditions, and logical operators (AND, OR, NOT).")
+        print("Example: (Manufacturer == 'Dell' AND Price > 900) OR Screen_IPS_panel == 1")
+        print("Use 'NOT' for negation, e.g., NOT (Manufacturer == 'Acer')")
+    
+        filter_expr = input("Enter your filter expression: ").strip()
+        filter_expr = (filter_expr
+                       .replace("AND", "and")
+                       .replace("OR", "or")
+                       .replace("NOT", "not"))
+    
+        try:
+            filtered_df = df.query(filter_expr)
+    
+            select_columns = input("Do you want to use slicing? (yes/no): ").strip().lower()
+            
+            if select_columns == 'yes':
+                sliced_df = slice_df(filtered_df)
+                if sliced_df is not None:
+                    return sliced_df
+                else:
+                    return None
+    
+            return filtered_df
+    
+        except Exception as e:
+            print(f"Error: Invalid filter expression. Details: {e}")
+            return None
+
         
     def correct_data_types(df):
         corrections = []
@@ -1015,8 +1056,46 @@ class analyisisToolkit:
         
             # Return the grouped DataFrame
             return grouped_df
-
+        def slice_df(df):
+            y = get_column_choice(df, allow_multiple=True)
+            x = input('Enter the range of rows (e.g., 0,5): ').split(',')
+            
+            try:
+                start, end = int(x[0]), int(x[-1])
+                return df.loc[start:end, y]
+            except (ValueError, IndexError):
+                print("Invalid row range. Please enter two valid numbers separated by a comma.")
+                return None
         
+        def filter_df(df):
+            print("Available columns:", df.columns.tolist())
+            print("Enter a filter expression using column names, conditions, and logical operators (AND, OR, NOT).")
+            print("Example: (Manufacturer == 'Dell' AND Price > 900) OR Screen_IPS_panel == 1")
+            print("Use 'NOT' for negation, e.g., NOT (Manufacturer == 'Acer')")
+        
+            filter_expr = input("Enter your filter expression: ").strip()
+            filter_expr = (filter_expr
+                           .replace("AND", "and")
+                           .replace("OR", "or")
+                           .replace("NOT", "not"))
+        
+            try:
+                filtered_df = df.query(filter_expr)
+        
+                select_columns = input("Do you want to use slicing? (yes/no): ").strip().lower()
+                
+                if select_columns == 'yes':
+                    sliced_df = slice_df(filtered_df)
+                    if sliced_df is not None:
+                        return sliced_df
+                    else:
+                        return None
+        
+                return filtered_df
+        
+            except Exception as e:
+                print(f"Error: Invalid filter expression. Details: {e}")
+                return None
     
         def rename_columns_interactive(df):
             """
@@ -2042,6 +2121,20 @@ class analyisisToolkit:
             elif choice == 17:
                 group_by(df)
                 return df
+            elif choice == 18:
+                result = filter_df(df)
+                display(result)
+                if result is not None:
+                    df = result  # Update df only if the function returned a valid DataFrame.
+                else:
+                    print("Filtering did not return a valid DataFrame.")
+            elif choice == 19:
+                result = slice_df(df)
+                display(result)
+                if result is not None:
+                    df = result  # Update df with the sliced DataFrame.
+                else:
+                    print("Slicing did not return a valid DataFrame.")
             else:
                 bold_and_large("Invalid choice. Please try again.")
             if choice not in [1, 2, 6, 11, 12, 13, 14, 16]:
@@ -2078,7 +2171,9 @@ class analyisisToolkit:
             14: "Analyze Correlations",
             15: "Remove Unnecessary columns",
             16: "Rename Columns",
-            17: "Group By and Aggregate"
+            17: "Group By and Aggregate",
+            18: "Filtering and Slicing",
+            19: "Slicing"
         }
         available_options = all_options.copy()
     
