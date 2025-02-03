@@ -149,7 +149,7 @@ This project is licensed under the MIT License.
 
 ## **Connect with Me**
 
-- **LinkedIn:** [Your LinkedIn Profile](https://linkedin.com/in/yourprofile)
+- **LinkedIn:** [[Your LinkedIn Profile][([https://linkedin.com/in/yourprofile)](https://www.linkedin.com/feed/?trk=404_page)](https://www.linkedin.com/in/ahmed-essam-%F0%9F%87%B5%F0%9F%87%B8-18a075218/)](https://www.linkedin.com/in/ahmed-essam-%F0%9F%87%B5%F0%9F%87%B8-18a075218/)
 ---
 
 **Transform your data effortlessly with the Data Analysis Toolkit! 🚀**
