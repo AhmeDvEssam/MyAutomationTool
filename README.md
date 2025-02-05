@@ -50,7 +50,7 @@ A comprehensive Python toolkit designed to simplify data analysis, preprocessing
 
 ### 7. **Automated Insights**
 
-- **Correlation Insights:** Identifies strong, moderate, and weak correlations with significance levels.
+- **Correlation Insights:** Identifies strong, moderate, and weak correlations with significance levels with the regression plot for each 2 variables.
 - **Outlier Handling Recommendations:** Suggests methods for handling outliers based on skewness and distribution.
 - **Missing Value Recommendations:** Provides filling strategies based on data distribution.
 
