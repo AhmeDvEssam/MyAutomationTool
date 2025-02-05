@@ -1155,164 +1155,211 @@ class analyisisToolkit:
         def analyze_correlations(df, significance_level=0.05):
             """
             Analyze correlations between numeric variables in a DataFrame, allowing the user to filter results
-            or manually choose columns for analysis.
+            or manually choose columns for analysis. After displaying the results, the user is prompted whether
+            to analyze again or return to the main menu.
             """
-            # Select only numeric columns
-            numeric_cols = df.select_dtypes(include=[np.number]).columns
-    
-            # Check if there are at least two numeric columns
-            if len(numeric_cols) < 2:
-                bold_and_large("Not enough numeric columns to calculate correlations.")
-                return
-    
-            # Ask the user if they want to filter the results
-            filter_choice = input("Do you want to filter the results? (yes/no): ").strip().lower()
-    
-            if filter_choice == "yes":
-                # Display filtering options
-                bold_and_large("Filter Options:")
-                print("1. Filter by Correlation Strength")
-                print("2. Filter by Significance Level")
-                print("3. Filter by Both")
-                print("4. Display All Outcomes")
-                filter_option = input("Choose an option (1/2/3/4): ").strip()
-    
-                # Initialize filters
-                correlation_filter = None
-                significance_filter = None
-    
-                # If the user chooses "Display All Outcomes", skip filtering
-                if filter_option == "4":
-                    bold_and_large("Displaying all correlation outcomes without filtering.")
+            while True:
+                # Select only numeric columns
+                numeric_cols = df.select_dtypes(include=[np.number]).columns
+        
+                # Check if there are at least two numeric columns
+                if len(numeric_cols) < 2:
+                    bold_and_large("Not enough numeric columns to calculate correlations.")
+                    return
+        
+                # Ask the user if they want to filter the results
+                filter_choice = input("Do you want to filter the results? (yes/no): ").strip().lower()
+        
+                if filter_choice == "yes":
+                    # Display filtering options
+                    bold_and_large("Filter Options:")
+                    print("1. Filter by Correlation Strength")
+                    print("2. Filter by Significance Level")
+                    print("3. Filter by Both")
+                    print("4. Display All Outcomes")
+                    filter_option = input("Choose an option (1/2/3/4): ").strip()
+        
+                    # Initialize filters
+                    correlation_filter = None
+                    significance_filter = None
+        
+                    # If the user chooses "Display All Outcomes", skip filtering
+                    if filter_option == "4":
+                        bold_and_large("Displaying all correlation outcomes without filtering.")
+                    else:
+                        # Filter by Correlation Strength
+                        if filter_option in ["1", "3"]:
+                            bold_and_large("Correlation Strength Options:")
+                            print("1. Strong Positive (Correlation > 0.7)")
+                            print("2. Moderate Positive (0.3 < Correlation <= 0.7)")
+                            print("3. Weak or No Correlation (-0.3 <= Correlation <= 0.3)")
+                            print("4. Moderate Negative (-0.7 < Correlation < -0.3)")
+                            print("5. Strong Negative (Correlation <= -0.7)")
+                            strength_choice = input("Choose a correlation strength (1/2/3/4/5): ").strip()
+        
+                            if strength_choice == "1":
+                                correlation_filter = lambda x: x > 0.7
+                            elif strength_choice == "2":
+                                correlation_filter = lambda x: 0.3 < x <= 0.7
+                            elif strength_choice == "3":
+                                correlation_filter = lambda x: -0.3 <= x <= 0.3
+                            elif strength_choice == "4":
+                                correlation_filter = lambda x: -0.7 < x < -0.3
+                            elif strength_choice == "5":
+                                correlation_filter = lambda x: x <= -0.7
+                            else:
+                                bold_and_large("Invalid choice. No correlation filter applied.")
+        
+                        # Filter by Significance Level
+                        if filter_option in ["2", "3"]:
+                            bold_and_large("Significance Level Options:")
+                            print("1. Strong evidence (p-value < 0.001)")
+                            print("2. Moderate evidence (0.001 <= p-value < 0.05)")
+                            print("3. Weak evidence (0.05 <= p-value < 0.1)")
+                            print("4. No evidence (p-value >= 0.1)")
+                            significance_choice = input("Choose a significance level (1/2/3/4): ").strip()
+        
+                            if significance_choice == "1":
+                                significance_filter = lambda x: x < 0.001
+                            elif significance_choice == "2":
+                                significance_filter = lambda x: 0.001 <= x < 0.05
+                            elif significance_choice == "3":
+                                significance_filter = lambda x: 0.05 <= x < 0.1
+                            elif significance_choice == "4":
+                                significance_filter = lambda x: x >= 0.1
+                            else:
+                                bold_and_large("Invalid choice. No significance filter applied.")
+        
                 else:
-                    # Filter by Correlation Strength
-                    if filter_option in ["1", "3"]:
-                        bold_and_large("Correlation Strength Options:")
-                        print("1. Strong Positive (Correlation > 0.7)")
-                        print("2. Moderate Positive (0.3 < Correlation <= 0.7)")
-                        print("3. Weak or No Correlation (-0.3 <= Correlation <= 0.3)")
-                        print("4. Moderate Negative (-0.7 < Correlation < -0.3)")
-                        print("5. Strong Negative (Correlation <= -0.7)")
-                        strength_choice = input("Choose a correlation strength (1/2/3/4/5): ").strip()
-    
-                        if strength_choice == "1":
-                            correlation_filter = lambda x: x > 0.7
-                        elif strength_choice == "2":
-                            correlation_filter = lambda x: 0.3 < x <= 0.7
-                        elif strength_choice == "3":
-                            correlation_filter = lambda x: -0.3 <= x <= 0.3
-                        elif strength_choice == "4":
-                            correlation_filter = lambda x: -0.7 < x < -0.3
-                        elif strength_choice == "5":
-                            correlation_filter = lambda x: x <= -0.7
-                        else:
-                            bold_and_large("Invalid choice. No correlation filter applied.")
-    
-                    # Filter by Significance Level
-                    if filter_option in ["2", "3"]:
-                        bold_and_large("Significance Level Options:")
-                        print("1. Strong evidence (p-value < 0.001)")
-                        print("2. Moderate evidence (0.001 <= p-value < 0.05)")
-                        print("3. Weak evidence (0.05 <= p-value < 0.1)")
-                        print("4. No evidence (p-value >= 0.1)")
-                        significance_choice = input("Choose a significance level (1/2/3/4): ").strip()
-    
-                        if significance_choice == "1":
-                            significance_filter = lambda x: x < 0.001
-                        elif significance_choice == "2":
-                            significance_filter = lambda x: 0.001 <= x < 0.05
-                        elif significance_choice == "3":
-                            significance_filter = lambda x: 0.05 <= x < 0.1
-                        elif significance_choice == "4":
-                            significance_filter = lambda x: x >= 0.1
-                        else:
-                            bold_and_large("Invalid choice. No significance filter applied.")
-    
-            else:
-                # Allow the user to manually choose columns
-                bold_and_large("Available numeric columns:")
-                for i, col in enumerate(numeric_cols):
-                    print(f"{i + 1}. {col}")
-                selected_indices = input("Enter the numbers of the columns you want to analyze (comma-separated): ").strip()
-                selected_indices = [int(idx.strip()) - 1 for idx in selected_indices.split(",")]
-                numeric_cols = [numeric_cols[idx] for idx in selected_indices]
-    
-            # Check if there are at least two numeric columns after filtering or selection
-            if len(numeric_cols) < 2:
-                bold_and_large("Not enough numeric columns to calculate correlations. Please adjust your filters or select more columns.")
-                return
-    
-            # Initialize a list to store correlation results
-            results_list = []
-    
-            # Calculate correlations for all pairs of numeric columns
-            for i, col1 in enumerate(numeric_cols):
-                for j, col2 in enumerate(numeric_cols):
-                    if i < j:  # Avoid duplicate pairs and self-correlations
-                        # Calculate Pearson correlation and p-value
-                        corr, p_value = pearsonr(df[col1], df[col2])
-    
-                        # Determine significance
-                        if p_value < 0.001:
-                            significance = "Strong evidence"
-                        elif p_value < 0.05:
-                            significance = "Moderate evidence"
-                        elif p_value < 0.1:
-                            significance = "Weak evidence"
-                        else:
-                            significance = "No evidence"
-    
-                        # Determine the meaning of the Pearson Correlation
-                        if corr > 0.7:
-                            meaning = "Strong positive linear correlation"
-                        elif corr > 0.3:
-                            meaning = "Moderate positive linear correlation"
-                        elif corr > -0.3:
-                            meaning = "Weak or no linear correlation"
-                        elif corr > -0.7:
-                            meaning = "Moderate negative linear correlation"
-                        else:
-                            meaning = "Strong negative linear correlation"
-    
-                        # Append the results as a dictionary to the list
-                        results_list.append({
-                            'Variable 1': col1,
-                            'Variable 2': col2,
-                            'Pearson Correlation': corr,
-                            'P-value': p_value,
-                            'Significance': significance,
-                            'Correlation Meaning': meaning
-                        })
-    
-            # Convert the list of dictionaries to a DataFrame
-            results = pd.DataFrame(results_list)
-    
-            # Apply filters to the results (if the user didn't choose "Display All Outcomes")
-            if filter_choice == "yes" and filter_option != "4":
-                if correlation_filter:
-                    results = results[results['Pearson Correlation'].apply(correlation_filter)]
-                if significance_filter:
-                    results = results[results['P-value'].apply(significance_filter)]
-    
-            # Check if there are any results after filtering
-            if len(results) == 0:
-                bold_and_large("No results found after applying filters. Please adjust your filters.")
-                return
-    
-            # Display the correlation results as a DataFrame
-            bold_and_large("Correlation Analysis Results:")
-            display(results)
-    
-            # Print insights for each pair of columns
-            bold_and_large("Insights:")
-            for _, row in results.iterrows():
-                var1, var2, corr, p_value, significance, meaning = row
-                print(f"- {var1} and {var2}:")
-                print(f"  - Pearson Correlation: {corr:.2f} ({meaning})")
-                print(f"  - P-value: {p_value:.4f} ({significance} of correlation)")
-                print(f"  - Interpretation: {get_correlation_interpretation(corr)}")
-                print()
-    
+                    # Allow the user to manually choose columns
+                    bold_and_large("Available numeric columns:")
+                    for i, col in enumerate(numeric_cols):
+                        print(f"{i + 1}. {col}")
+                    selected_indices = input("Enter the numbers of the columns you want to analyze (comma-separated): ").strip()
+                    try:
+                        selected_indices = [int(idx.strip()) - 1 for idx in selected_indices.split(",")]
+                        numeric_cols = [numeric_cols[idx] for idx in selected_indices]
+                    except (ValueError, IndexError):
+                        bold_and_large("Invalid selection. Please try again.")
+                        continue  # restart the loop for a valid input
+        
+                # Check if there are at least two numeric columns after filtering or selection
+                if len(numeric_cols) < 2:
+                    bold_and_large("Not enough numeric columns to calculate correlations. Please adjust your filters or select more columns.")
+                    continue  # restart the loop
+        
+                # Initialize a list to store correlation results
+                results_list = []
+        
+                # Calculate correlations for all pairs of numeric columns
+                for i, col1 in enumerate(numeric_cols):
+                    for j, col2 in enumerate(numeric_cols):
+                        if i < j:  # Avoid duplicate pairs and self-correlations
+                            # Calculate Pearson correlation and p-value
+                            corr, p_value = pearsonr(df[col1], df[col2])
+        
+                            # Determine significance
+                            if p_value < 0.001:
+                                significance = "Strong evidence"
+                            elif p_value < 0.05:
+                                significance = "Moderate evidence"
+                            elif p_value < 0.1:
+                                significance = "Weak evidence"
+                            else:
+                                significance = "No evidence"
+        
+                            # Determine the meaning of the Pearson Correlation
+                            if corr > 0.7:
+                                meaning = "Strong positive linear correlation"
+                            elif corr > 0.3:
+                                meaning = "Moderate positive linear correlation"
+                            elif corr > -0.3:
+                                meaning = "Weak or no linear correlation"
+                            elif corr > -0.7:
+                                meaning = "Moderate negative linear correlation"
+                            else:
+                                meaning = "Strong negative linear correlation"
+        
+                            # Append the results as a dictionary to the list
+                            results_list.append({
+                                'Variable 1': col1,
+                                'Variable 2': col2,
+                                'Pearson Correlation': corr,
+                                'P-value': p_value,
+                                'Significance': significance,
+                                'Correlation Meaning': meaning
+                            })
+        
+                # Convert the list of dictionaries to a DataFrame
+                results = pd.DataFrame(results_list)
+        
+                # Apply filters to the results (if the user didn't choose "Display All Outcomes")
+                if filter_choice == "yes" and filter_option != "4":
+                    if correlation_filter:
+                        results = results[results['Pearson Correlation'].apply(correlation_filter)]
+                    if significance_filter:
+                        results = results[results['P-value'].apply(significance_filter)]
+        
+                # Check if there are any results after filtering
+                if len(results) == 0:
+                    bold_and_large("No results found after applying filters. Please adjust your filters.")
+                else:
+                    # Display the correlation results as a DataFrame
+                    bold_and_large("Correlation Analysis Results:")
+                    display(results)
+        
+                    visualize = input("Do You Want To Visualize Regression Plot for each pair? (yes/no): ").strip().lower()
+                    if visualize == 'yes':
+                        # For each row in the results, display the regression plot and the corresponding insight.
+                        for _, row in results.iterrows():
+                            var1 = row['Variable 1']
+                            var2 = row['Variable 2']
+                            corr = row['Pearson Correlation']
+                            p_value = row['P-value']
+                            significance = row['Significance']
+                            meaning = row['Correlation Meaning']
+                            
+                            # Display a header for the regression plot
+                            bold_and_large(f"Regression Plot for {var1} vs {var2}:")
+                            # Here, ensure that analyisisToolkit.plot_regression accepts (df, var1, var2, title=...)
+                            analyisisToolkit.plot_regression(df, var1, var2, title=f"Regression Plot: {var1} vs {var2}")
+                            
+                            # Print the insights for this pair
+                            print(f"- {var1} and {var2}:")
+                            print(f"  - Pearson Correlation: {corr:.2f} ({meaning})")
+                            print(f"  - P-value: {p_value:.4f} ({significance} of correlation)")
+                            print(f"  - Interpretation: {get_correlation_interpretation(corr)}")
+                            print()
+                            
+                            # Pause between plots if desired
+                            input("Press Enter to continue to the next regression plot...")
+                    else:
+                        # Print insights for each pair of columns if no visualization is desired
+                        bold_and_large("Insights:")
+                        for _, row in results.iterrows():
+                            var1 = row['Variable 1']
+                            var2 = row['Variable 2']
+                            corr = row['Pearson Correlation']
+                            p_value = row['P-value']
+                            significance = row['Significance']
+                            meaning = row['Correlation Meaning']
+                            
+                            print(f"- {var1} and {var2}:")
+                            print(f"  - Pearson Correlation: {corr:.2f} ({meaning})")
+                            print(f"  - P-value: {p_value:.4f} ({significance} of correlation)")
+                            print(f"  - Interpretation: {get_correlation_interpretation(corr)}")
+                            print()
+        
+                # Ask the user whether to continue or go back to the main menu
+                while True:
+                    C_B = input("Press Enter to continue or type 'back' to go to the main menu: ").strip().lower()
+                    if C_B == '':
+                        break  # Continue with another round of analysis
+                    elif C_B == 'back':
+                        return  # Exit the function to return to the main menu
+                    else:
+                        break
+
         def get_correlation_interpretation(corr):
             """
             Provide a textual interpretation of the Pearson Correlation value.
@@ -1713,7 +1760,7 @@ class analyisisToolkit:
                                         elif viz_choice == 3:
                                             analyisisToolkit.plot_skewness(df)
                                         elif viz_choice == 4:
-                                            column_choice = get_column_choice(df)
+                                            column_choice = get_column_choice(df,allow_multiple = True)
                                             if column_choice == "exit":
                                                 bold_and_large("No action taken.")
                                             else:
