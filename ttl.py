@@ -20,100 +20,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import networkx as nx
 
 class analyisisToolkit:
-    # Create an instance of the analyisisToolkit class
-    
-    
-    # Dummy function for correcting data types, replace with actual implementation
-    def generate_business_report(df, report_filename="business_data_report.pdf"):
-    
-        # Initialize PDF
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", "B", 16)
-    
-        # Title and Introduction
-        pdf.cell(200, 10, txt="Business Data Preparation Report", ln=True, align="C")
-        pdf.ln(10)
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, txt=(
-            "This report summarizes the key steps taken to prepare the dataset for analysis. "
-            "The objective is to ensure data quality, consistency, and readiness for business insights."
-        ))
-        pdf.ln(10)
-    
-        # Data Overview
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, txt="1. Data Overview", ln=True)
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, txt=(
-            f"Initial dataset contained {df.shape[0]} rows and {df.shape[1]} columns.\n"
-            f"Summary of dataset:\n{df.describe(include='all').T.to_string()}\n"
-        ))
-        pdf.ln(10)
-    
-        # Key Cleaning Steps
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, txt="2. Key Cleaning Steps", ln=True)
-        pdf.set_font("Arial", size=12)
-    
-        # Missing Values
-        missing = df.isnull().sum()
-        missing_columns = missing[missing > 0]
-        if not missing_columns.empty:
-            pdf.multi_cell(0, 10, txt=(
-                f"Missing values were detected in {len(missing_columns)} columns.\n"
-                "Appropriate imputation techniques were applied based on data types and distributions."
-            ))
-        else:
-            pdf.multi_cell(0, 10, txt="No missing values detected.")
-        pdf.ln(10)
-    
-        # Duplicate Removal
-        duplicate_count = df.duplicated().sum()
-        if duplicate_count > 0:
-            pdf.multi_cell(0, 10, txt=f"Removed {duplicate_count} duplicate rows from the dataset.")
-        else:
-            pdf.multi_cell(0, 10, txt="No duplicate rows detected.")
-        pdf.ln(10)
-    
-        # Outliers and Transformations
-        pdf.cell(200, 10, txt="3. Outliers and Data Transformations", ln=True)
-        outlier_columns = []  # Placeholder for any specific handling logic
-        if outlier_columns:
-            pdf.multi_cell(0, 10, txt=f"Outliers were detected and capped in the following columns: {outlier_columns}")
-        else:
-            pdf.multi_cell(0, 10, txt="No significant outliers detected.")
-        pdf.ln(10)
-    
-        # Visualization Section
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, txt="4. Data Insights and Visualizations", ln=True)
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, txt="Visualizations of key metrics and distributions are included below.")
-        
-        # Example: Correlation Heatmap
-        correlation = df.select_dtypes(include=[np.number]).corr()
-        if not correlation.empty:
-            heatmap_path = "correlation_heatmap.png"
-            sns.heatmap(correlation, annot=True, cmap="coolwarm")
-            plt.savefig(heatmap_path)
-            pdf.image(heatmap_path, x=10, w=180)
-            plt.close()
-            os.remove(heatmap_path)  # Clean up the saved image
-    
-        # Conclusion and Recommendations
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(200, 10, txt="5. Conclusion and Recommendations", ln=True)
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, txt=(
-            "The data has been cleaned and prepared for analysis. Key steps included handling missing values, "
-            "removing duplicates, and normalizing numeric data. Next steps involve further exploration or predictive modeling."
-        ))
-    
-        # Save Report
-        pdf.output(report_filename)
-        print(f"Report saved as {report_filename}")
-                
+    # Create an instance of the analyisisToolkit class                
     def handle_outliers(df, method='zscore', threshold=3):
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         for col in numeric_cols:
@@ -826,50 +733,40 @@ class analyisisToolkit:
             print(f"Error: Invalid filter expression. Details: {e}")
             return None
 
-        
+    
     def correct_data_types(df):
         corrections = []
+        
         for col in df.columns:
             old_type = df[col].dtype
-            
-            # If the column is object type
+            # Strip spaces and replace empty strings with NaN for object columns
             if old_type == 'object':
-                # Check if all non-null values are integer-like
-                if df[col].dropna().apply(lambda x: x.isdigit() if isinstance(x, str) else False).all():
-                    df[col] = df[col].astype('Int64')  # Nullable integer
-                    new_type = df[col].dtype
-                    corrections.append((col, old_type, new_type))
-                # Check if all non-null values are float-like
-                elif df[col].dropna().apply(lambda x: x.replace('.', '', 1).isdigit() if isinstance(x, str) else False).all():
-                    df[col] = pd.to_numeric(df[col], errors='coerce')
-                    new_type = df[col].dtype
-                    corrections.append((col, old_type, new_type))
+                df[col] = df[col].astype(str).str.strip().replace({'': None})
             
-            # If the column is float type but contains integer-like values
-            elif pd.api.types.is_float_dtype(df[col]):
-                # Check if all non-null values are integer-like
-                if df[col].dropna().apply(lambda x: x.is_integer() if not pd.isna(x) else False).all():
-                    df[col] = df[col].astype('Int64')  # Nullable integer
+                # Check if the column contains mostly numeric values
+                numeric_count = df[col].apply(lambda x: str(x).replace('.', '', 1).isdigit() if x is not None else False).sum()
+                total_count = df[col].notna().sum()
+                
+                if numeric_count / total_count > 0.8:  # If 80% or more values are numeric
+                    df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
+                    
+                    # Now check if it should be an integer or float
+                    if pd.api.types.is_float_dtype(df[col]) and df[col].dropna().mod(1).eq(0).all():
+                        df[col] = df[col].astype('Int64')  # Convert to nullable int if all values are whole numbers
                     new_type = df[col].dtype
                     corrections.append((col, old_type, new_type))
+                else:
+                    print(f"Column {col} remains as object due to mixed data.")
             
-            # If the column is numeric but not float, ensure proper handling of missing values
+            # If the column is numeric, check if it's an integer or float
             elif pd.api.types.is_numeric_dtype(df[col]):
-                if df[col].isna().sum() > 0 and old_type != 'float':
-                    df[col] = df[col].astype('float')
-                    new_type = df[col].dtype
-                    corrections.append((col, old_type, new_type))
+                if pd.api.types.is_float_dtype(df[col]) and df[col].dropna().mod(1).eq(0).all():
+                    df[col] = df[col].astype('Int64')  # Convert float to int if all values are whole numbers
+                new_type = df[col].dtype
+                if new_type != old_type:
+                    corrections.append((col, old_type, new_type))        
+        return df, corrections
         
-        return df, corrections    
-    # Function to cap outliers
-    def cap_outliers(series, lower_percentile=1, upper_percentile=99):
-        if pd.api.types.is_numeric_dtype(series):
-            lower_cap = series.quantile(lower_percentile / 100)
-            upper_cap = series.quantile(upper_percentile / 100)
-            return series.clip(lower=lower_cap, upper=upper_cap)
-        else:
-            return series
-    
     def remove_outliers_iqr(data, column):
         """Remove outliers using IQR."""
         Q1 = data[column].quantile(0.25)
@@ -1512,7 +1409,7 @@ class analyisisToolkit:
             pd.set_option('display.max_colwidth', None)
     
             summary = df.describe(include='all').T
-            summary['missing_count'] = df.isnull().sum()
+            summary['missing_count'] = (df.isnull().sum()/len(df))*100
             summary['duplicate_count'] = df.duplicated().sum()
             summary['mode'] = df.mode().iloc[0]
             summary['data_type'] = df.dtypes
