@@ -9,6 +9,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from ydata_profiling import ProfileReport
 from sklearn.impute import KNNImputer
 import os
+import re
 from statsmodels.tsa.seasonal import seasonal_decompose
 import joypy
 import squarify
@@ -732,40 +733,38 @@ class analyisisToolkit:
         except Exception as e:
             print(f"Error: Invalid filter expression. Details: {e}")
             return None
-
     
     def correct_data_types(df):
         corrections = []
-        
+    
         for col in df.columns:
             old_type = df[col].dtype
-            # Strip spaces and replace empty strings with NaN for object columns
+    
             if old_type == 'object':
-                df[col] = df[col].astype(str).str.strip().replace({'': None})
-            
-                # Check if the column contains mostly numeric values
-                numeric_count = df[col].apply(lambda x: str(x).replace('.', '', 1).isdigit() if x is not None else False).sum()
-                total_count = df[col].notna().sum()
+                # Remove commas and strip spaces
+                cleaned_col = df[col].astype(str).str.replace(',', '').str.strip()
+    
+                # Try converting to numeric
+                numeric_values = pd.to_numeric(cleaned_col, errors='coerce')
                 
-                if numeric_count / total_count > 0.8:  # If 80% or more values are numeric
-                    df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
+                # Check if at least 80% of non-null values are numbers
+                num_numeric = numeric_values.notna().sum()
+                num_total = df[col].notna().sum()
+    
+                if num_total > 0 and (num_numeric / num_total) > 0.8:
+                    df[col] = numeric_values  # Convert column to numeric
                     
-                    # Now check if it should be an integer or float
-                    if pd.api.types.is_float_dtype(df[col]) and df[col].dropna().mod(1).eq(0).all():
-                        df[col] = df[col].astype('Int64')  # Convert to nullable int if all values are whole numbers
+                    # Convert to integer if no decimals
+                    if df[col].dropna().mod(1).eq(0).all():
+                        df[col] = df[col].astype('Int64')
+    
                     new_type = df[col].dtype
                     corrections.append((col, old_type, new_type))
                 else:
-                    print(f"Column {col} remains as object due to mixed data.")
-            
-            # If the column is numeric, check if it's an integer or float
-            elif pd.api.types.is_numeric_dtype(df[col]):
-                if pd.api.types.is_float_dtype(df[col]) and df[col].dropna().mod(1).eq(0).all():
-                    df[col] = df[col].astype('Int64')  # Convert float to int if all values are whole numbers
-                new_type = df[col].dtype
-                if new_type != old_type:
-                    corrections.append((col, old_type, new_type))        
+                    print(f"Column '{col}' remains as object due to mixed data.")
+    
         return df, corrections
+    
         
     def remove_outliers_iqr(data, column):
         """Remove outliers using IQR."""
